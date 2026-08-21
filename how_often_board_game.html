@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Often Do You...? // Verified Board Game</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --accent-green: #4ec9b0;
+            --accent-blue: #569cd6;
+            --accent-yellow: #dcdcaa;
+            --accent-orange: #ce9178;
+            --accent-red: #f44747;
+            --text-main: #d4d4d4;
+            --border-color: #333333;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Consolas', 'Courier New', monospace;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        h1 { color: var(--accent-blue); font-size: 18pt; margin-bottom: 4px; }
+        .tagline { color: var(--accent-orange); font-style: italic; font-size: 8.5pt; }
+
+        .game-layout {
+            display: grid;
+            grid-template-columns: 1fr 330px;
+            gap: 15px;
+        }
+
+        .board-container {
+            background-color: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .board-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            grid-template-rows: repeat(7, 1fr);
+            gap: 4px;
+            width: 100%;
+            max-width: 550px;
+            aspect-ratio: 1 / 1;
+        }
+
+        .tile {
+            background-color: #2a2a2a;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 2px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            font-size: 7pt;
+            user-select: none;
+            overflow: hidden;
+        }
+
+        .tile .icon { font-size: 11pt; line-height: 1; }
+        .tile .label { font-weight: bold; color: var(--text-main); line-height: 1.1; margin-top: 2px; }
+
+        .tile.start { background-color: #1e3a29; border-color: var(--accent-green); }
+        .tile.finish { background-color: #481e1e; border-color: var(--accent-red); }
+        
+        .tile.center-info {
+            background-color: #161616;
+            border: 1px dashed var(--accent-yellow);
+            grid-column: 3 / span 3;
+            grid-row: 3 / span 3;
+            display: flex;
+            flex-direction: column;
+            padding: 8px;
+            justify-content: center;
+            align-items: center;
+            z-index: 1;
+            border-radius: 8px;
+        }
+
+        .token-container {
+            position: absolute;
+            bottom: 2px;
+            display: flex;
+            gap: 2px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .player-token {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: 1px solid #fff;
+            box-shadow: 0 0 3px rgba(0,0,0,0.8);
+        }
+
+        .p0 { background-color: #f44747; }
+        .p1 { background-color: #4ec9b0; }
+        .p2 { background-color: #f5c842; }
+        .p3 { background-color: #569cd6; }
+
+        .controls-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .panel-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .panel-title {
+            color: var(--accent-green);
+            font-size: 10pt;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 4px;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .dice-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            background: #141414;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .dice {
+            width: 40px;
+            height: 40px;
+            background: var(--accent-yellow);
+            color: #000;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15pt;
+            font-weight: bold;
+        }
+
+        .btn {
+            background-color: var(--accent-blue);
+            color: #121212;
+            border: none;
+            padding: 8px 12px;
+            font-family: inherit;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn:disabled { background-color: #555; cursor: not-allowed; }
+
+        .prompt-box {
+            background-color: #141414;
+            border-left: 3px solid var(--accent-yellow);
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 8.5pt;
+            line-height: 1.4;
+        }
+
+        .verify-input {
+            width: 100%;
+            background: #000;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 8px;
+            font-family: inherit;
+            font-size: 8.5pt;
+            margin-top: 8px;
+            margin-bottom: 8px;
+        }
+
+        .feedback-text {
+            font-size: 8pt;
+            margin-top: 5px;
+            font-weight: bold;
+            line-height: 1.4;
+        }
+
+        .player-select {
+            background: #141414;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 5px;
+            font-family: inherit;
+            border-radius: 4px;
+            width: 100%;
+            margin-bottom: 8px;
+            font-size: 8.5pt;
+        }
+
+        @media (max-width: 768px) {
+            .game-layout { grid-template-columns: 1fr; }
+            .board-container { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>// HOW OFTEN DO YOU...?</h1>
+        <div class="tagline">&lt;Strict Subject-Verb Agreement & Word Order Board Game /&gt;</div>
+    </header>
+
+    <div class="game-layout">
+        <!-- BOARD -->
+        <div class="board-container">
+            <div class="board-grid" id="boardGrid">
+                <div class="tile center-info">
+                    <h2 style="color: var(--accent-yellow); font-size: 9pt; margin-bottom: 4px;">Grammar Rules</h2>
+                    <div style="font-size: 6.8pt; text-align: left; width: 100%; line-height: 1.3;">
+                        • <strong>Subject Verb Agreement:</strong> Use base verb for "I" (e.g., <em>I <u>give</u></em>, NOT <em>I <u>gives</u></em>).<br><br>
+                        • <strong>Adverbs:</strong> BEFORE main verb.<br>
+                        <em>(e.g., I <u>never</u> give flowers)</em><br><br>
+                        • <strong>Expressions:</strong> END of sentence.<br>
+                        <em>(e.g., I give flowers <u>once a week</u>)</em>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTROLS -->
+        <div class="controls-panel">
+            <div class="panel-card">
+                <div class="panel-title">⚙️ Game Setup</div>
+                <select class="player-select" id="playerCountSelect" onchange="setupGame()">
+                    <option value="2">2 Players (🔴 🟢)</option>
+                    <option value="3">3 Players (🔴 🟢 🟡)</option>
+                    <option value="4" selected>4 Players (🔴 🟢 🟡 🔵)</option>
+                </select>
+                <button class="btn" style="background-color: var(--border-color); color: #fff; width: 100%; font-size: 8pt;" onclick="setupGame()">
+                    RESET GAME ↺
+                </button>
+            </div>
+
+            <div class="panel-card">
+                <div class="panel-title">🎲 D4 Virtual Dice</div>
+                <div style="font-size: 9pt; font-weight: bold; margin-bottom: 8px;">
+                    Turn: <span id="playerTurn" style="color: #f44747">Player 1 🔴</span>
+                </div>
+                <div class="dice-box">
+                    <div class="dice" id="diceValue">D4</div>
+                    <button class="btn" id="rollBtn" onclick="rollDice()">ROLL (1-4)</button>
+                </div>
+            </div>
+
+            <div class="panel-card">
+                <div class="panel-title">💬 Answer Verification</div>
+                <div class="prompt-box" id="promptBox">
+                    Roll the 4-sided dice to move your token!
+                </div>
+
+                <div id="verificationArea" style="display: none; margin-top: 10px;">
+                    <input type="text" class="verify-input" id="answerInput" placeholder="Type your full sentence..." autofocus onkeydown="if(event.key==='Enter') verifyAnswer()">
+                    <button class="btn" style="width: 100%; background-color: var(--accent-green);" onclick="verifyAnswer()">VERIFY ANSWER ✓</button>
+                    <div class="feedback-text" id="feedbackText"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const tileData = [
+        { id: 0, label: "START", icon: "🚀", row: 7, col: 1, type: "start" },
+        { id: 1, label: "eat pizza", icon: "🍕", row: 6, col: 1, baseVerb: "eat", invalidVerbs: ["eats", "eating", "ate"], phrase: "eat pizza" },
+        { id: 2, label: "go swimming", icon: "🏊‍♂️", row: 5, col: 1, baseVerb: "go", invalidVerbs: ["goes", "going", "went"], phrase: "go swimming" },
+        { id: 3, label: "ride a horse", icon: "🐎", row: 4, col: 1, baseVerb: "ride", invalidVerbs: ["rides", "riding", "rode"], phrase: "ride a horse" },
+        { id: 4, label: "give flowers", icon: "💐", row: 3, col: 1, baseVerb: "give", invalidVerbs: ["gives", "giving", "gave"], phrase: "give flowers" },
+        { id: 5, label: "make a snowman", icon: "☃️", row: 2, col: 1, baseVerb: "make", invalidVerbs: ["makes", "making", "made"], phrase: "make a snowman" },
+        { id: 6, label: "take photos", icon: "📷", row: 1, col: 1, baseVerb: "take", invalidVerbs: ["takes", "taking", "took"], phrase: "take photos" },
+        { id: 7, label: "read books", icon: "📚", row: 1, col: 2, baseVerb: "read", invalidVerbs: ["reads", "reading"], phrase: "read books" },
+        { id: 8, label: "go to the zoo", icon: "🦒", row: 1, col: 3, baseVerb: "go", invalidVerbs: ["goes", "going", "went"], phrase: "go to the zoo" },
+        { id: 9, label: "do homework", icon: "✍️", row: 1, col: 4, baseVerb: "do", invalidVerbs: ["does", "doing", "did"], phrase: "do homework" },
+        { id: 10, label: "see a movie", icon: "🎬", row: 1, col: 5, baseVerb: "see", invalidVerbs: ["sees", "seeing", "saw"], phrase: "see a movie" },
+        { id: 11, label: "buy ice cream", icon: "🍦", row: 1, col: 6, baseVerb: "buy", invalidVerbs: ["buys", "buying", "bought"], phrase: "buy ice cream" },
+        { id: 12, label: "drive a car", icon: "🚗", row: 1, col: 7, baseVerb: "drive", invalidVerbs: ["drives", "driving", "drove"], phrase: "drive a car" },
+        { id: 13, label: "drink juice", icon: "🧃", row: 2, col: 7, baseVerb: "drink", invalidVerbs: ["drinks", "drinking", "drank"], phrase: "drink juice" },
+        { id: 14, label: "have a picnic", icon: "🧺", row: 3, col: 7, baseVerb: "have", invalidVerbs: ["has", "having", "had"], phrase: "have a picnic" },
+        { id: 15, label: "brush teeth", icon: "🪥", row: 4, col: 7, baseVerb: "brush", invalidVerbs: ["brushes", "brushing", "brushed"], phrase: "brush my teeth" },
+        { id: 16, label: "cry", icon: "😭", row: 5, col: 7, baseVerb: "cry", invalidVerbs: ["cries", "crying", "cried"], phrase: "cry" },
+        { id: 17, label: "watch TV", icon: "📺", row: 6, col: 7, baseVerb: "watch", invalidVerbs: ["watches", "watching", "watched"], phrase: "watch tv" },
+        { id: 18, label: "wear a hat", icon: "🎩", row: 7, col: 7, baseVerb: "wear", invalidVerbs: ["wears", "wearing", "wore"], phrase: "wear a hat" },
+        { id: 19, label: "take a taxi", icon: "🚕", row: 7, col: 6, baseVerb: "take", invalidVerbs: ["takes", "taking", "took"], phrase: "take a taxi" },
+        { id: 20, label: "eat pineapple", icon: "🍍", row: 7, col: 5, baseVerb: "eat", invalidVerbs: ["eats", "eating", "ate"], phrase: "eat pineapple" },
+        { id: 21, label: "play marbles", icon: "🔮", row: 7, col: 4, baseVerb: "play", invalidVerbs: ["plays", "playing", "played"], phrase: "play marbles" },
+        { id: 22, label: "travel by train", icon: "🚂", row: 7, col: 3, baseVerb: "travel", invalidVerbs: ["travels", "traveling", "traveled"], phrase: "travel by train" },
+        { id: 23, label: "play tennis", icon: "🎾", row: 7, col: 2, baseVerb: "play", invalidVerbs: ["plays", "playing", "played"], phrase: "play tennis" },
+        { id: 24, label: "get up late", icon: "⏰", row: 6, col: 2, baseVerb: "get", invalidVerbs: ["gets", "getting", "got"], phrase: "get up late" },
+        { id: 25, label: "eat strawberries", icon: "🍓", row: 5, col: 2, baseVerb: "eat", invalidVerbs: ["eats", "eating", "ate"], phrase: "eat strawberries" },
+        { id: 26, label: "play cards", icon: "🃏", row: 4, col: 2, baseVerb: "play", invalidVerbs: ["plays", "playing", "played"], phrase: "play cards" },
+        { id: 27, label: "take a shower", icon: "🚿", row: 3, col: 2, baseVerb: "take", invalidVerbs: ["takes", "taking", "took"], phrase: "take a shower" },
+        { id: 28, label: "visit grandparents", icon: "👵", row: 2, col: 2, baseVerb: "visit", phrase: "visit my grandparents", invalidVerbs: ["visits", "visiting", "visited"] },
+        { id: 29, label: "ride a bike", icon: "🚲", row: 2, col: 3, baseVerb: "ride", invalidVerbs: ["rides", "riding", "rode"], phrase: "ride a bike" },
+        { id: 30, label: "go swimming", icon: "🏊", row: 2, col: 4, baseVerb: "go", invalidVerbs: ["goes", "going", "went"], phrase: "go swimming" },
+        { id: 31, label: "FINISH", icon: "🏁", row: 2, col: 5, type: "finish" }
+    ];
+
+    const adverbs = ["always", "usually", "often", "sometimes", "rarely", "hardly ever", "never"];
+    
+    const timeExpressions = [
+        "every day", "every week", "every month", "every year", "every other day",
+        "once a day", "once a week", "once a month", "once a year",
+        "twice a day", "twice a week", "twice a month", "twice a year",
+        "three times a day", "three times a week", "three times a month", "three times a year",
+        "once in a blue moon"
+    ];
+
+    const allPlayersMaster = [
+        { id: 0, name: "Player 1", color: "#f44747", pos: 0, icon: "🔴" },
+        { id: 1, name: "Player 2", color: "#4ec9b0", pos: 0, icon: "🟢" },
+        { id: 2, name: "Player 3", color: "#f5c842", pos: 0, icon: "🟡" },
+        { id: 3, name: "Player 4", color: "#569cd6", pos: 0, icon: "🔵" }
+    ];
+
+    let activePlayers = [];
+    let currentTurn = 0;
+    let isRolling = false;
+    let waitingForVerification = false;
+
+    function initBoard() {
+        const board = document.getElementById('boardGrid');
+        
+        tileData.forEach(tile => {
+            const div = document.createElement('div');
+            div.className = `tile ${tile.type || ''}`;
+            div.id = `tile-${tile.id}`;
+            div.style.gridRow = tile.row;
+            div.style.gridColumn = tile.col;
+
+            div.innerHTML = `
+                <div class="icon">${tile.icon}</div>
+                <div class="label">${tile.label}</div>
+                <div class="token-container" id="tokens-${tile.id}"></div>
+            `;
+            board.appendChild(div);
+        });
+
+        setupGame();
+    }
+
+    function setupGame() {
+        const count = parseInt(document.getElementById('playerCountSelect').value);
+        activePlayers = allPlayersMaster.slice(0, count);
+        activePlayers.forEach(p => p.pos = 0);
+        
+        currentTurn = 0;
+        waitingForVerification = false;
+        document.getElementById('playerTurn').innerText = `${activePlayers[0].name} ${activePlayers[0].icon}`;
+        document.getElementById('playerTurn').style.color = activePlayers[0].color;
+        document.getElementById('diceValue').innerText = "D4";
+        document.getElementById('promptBox').innerHTML = "Roll the 4-sided dice to move your token!";
+        document.getElementById('verificationArea').style.display = "none";
+        document.getElementById('rollBtn').disabled = false;
+        
+        renderTokens();
+    }
+
+    function renderTokens() {
+        tileData.forEach(t => {
+            const container = document.getElementById(`tokens-${t.id}`);
+            if (container) container.innerHTML = '';
+        });
+
+        activePlayers.forEach(p => {
+            const container = document.getElementById(`tokens-${p.pos}`);
+            if (container) {
+                const token = document.createElement('div');
+                token.className = `player-token p${p.id}`;
+                token.title = p.name;
+                container.appendChild(token);
+            }
+        });
+    }
+
+    function rollDice() {
+        if (isRolling || waitingForVerification) return;
+        isRolling = true;
+        document.getElementById('rollBtn').disabled = true;
+
+        const diceEl = document.getElementById('diceValue');
+        let count = 0;
+
+        const interval = setInterval(() => {
+            diceEl.innerText = Math.floor(Math.random() * 4) + 1;
+            count++;
+            if (count > 8) {
+                clearInterval(interval);
+                const roll = Math.floor(Math.random() * 4) + 1;
+                diceEl.innerText = roll;
+                movePlayer(roll);
+            }
+        }, 70);
+    }
+
+    function movePlayer(steps) {
+        const p = activePlayers[currentTurn];
+        p.pos = Math.min(p.pos + steps, tileData.length - 1);
+        
+        renderTokens();
+        updatePrompt(p);
+
+        isRolling = false;
+    }
+
+    function updatePrompt(player) {
+        const currentTile = tileData[player.pos];
+        const promptBox = document.getElementById('promptBox');
+
+        if (currentTile.type === 'start') {
+            promptBox.innerHTML = `<strong>${player.name}</strong> is at START.`;
+            advanceTurn();
+        } else if (currentTile.type === 'finish') {
+            promptBox.innerHTML = `<strong style="color: var(--accent-green); font-size: 11pt;">🎉 ${player.name.toUpperCase()} WINS THE GAME!</strong>`;
+            document.getElementById('verificationArea').style.display = "none";
+        } else {
+            waitingForVerification = true;
+            promptBox.innerHTML = `
+                <div style="color: var(--accent-yellow); font-size: 8pt; margin-bottom: 2px;">// LANDED ACTIVITY:</div>
+                <div style="font-size: 11pt; font-weight: bold; color: #fff; margin-bottom: 4px;">
+                    ${currentTile.icon} ${currentTile.label.toUpperCase()}
+                </div>
+                <div style="font-size: 7.5pt; color: #aaa;">
+                    Type <strong>${player.name}</strong>'s complete answer to verify grammar!
+                </div>
+            `;
+            document.getElementById('verificationArea').style.display = "block";
+            document.getElementById('answerInput').value = "";
+            document.getElementById('feedbackText').innerText = "";
+            document.getElementById('answerInput').focus();
+        }
+    }
+
+    function verifyAnswer() {
+        const p = activePlayers[currentTurn];
+        const currentTile = tileData[p.pos];
+        const rawInput = document.getElementById('answerInput').value.trim().toLowerCase().replace(/[.,!]/g, '');
+        const words = rawInput.split(/\s+/);
+        const feedback = document.getElementById('feedbackText');
+
+        // Rule 1: Subject check
+        if (!rawInput.startsWith("i ")) {
+            feedback.style.color = "var(--accent-red)";
+            feedback.innerText = "❌ Sentence must start with subject 'I ...'";
+            return;
+        }
+
+        const baseVerb = currentTile.baseVerb.toLowerCase();
+
+        // Rule 2: Conjugation error check (-s, -ed, -ing for 'I')
+        if (currentTile.invalidVerbs) {
+            const usedInvalid = currentTile.invalidVerbs.find(inv => words.includes(inv));
+            if (usedInvalid) {
+                feedback.style.color = "var(--accent-red)";
+                feedback.innerText = `❌ Subject-Verb Agreement Error! With 'I', use base verb '${baseVerb}' (NOT '${usedInvalid}').\nExample: "I ${baseVerb}..."`;
+                return;
+            }
+        }
+
+        // Rule 3: Correct base verb exists
+        if (!words.includes(baseVerb)) {
+            feedback.style.color = "var(--accent-red)";
+            feedback.innerText = `❌ Sentence must include the base verb '${baseVerb}'!`;
+            return;
+        }
+
+        // Rule 4: Presence of Adverb or Time Expression
+        const foundAdverb = adverbs.find(adv => rawInput.includes(adv));
+        const foundExpression = timeExpressions.find(exp => rawInput.includes(exp));
+
+        if (!foundAdverb && !foundExpression) {
+            feedback.style.color = "var(--accent-red)";
+            feedback.innerText = "❌ Missing frequency word! Use an adverb (always, never...) OR time expression (once a week...).";
+            return;
+        }
+
+        // Rule 5: Adverb Word Order (BEFORE verb)
+        if (foundAdverb) {
+            const adverbIndex = rawInput.indexOf(foundAdverb);
+            const verbIndex = rawInput.indexOf(baseVerb);
+
+            if (adverbIndex > verbIndex) {
+                feedback.style.color = "var(--accent-red)";
+                feedback.innerText = `❌ Word Order Error! Adverbs like '${foundAdverb}' go BEFORE the verb '${baseVerb}'!\nExample: "I ${foundAdverb} ${currentTile.phrase}"`;
+                return;
+            }
+        }
+
+        // Rule 6: Time Expression Word Order (END of sentence)
+        if (foundExpression) {
+            const expressionIndex = rawInput.indexOf(foundExpression);
+            const verbIndex = rawInput.indexOf(baseVerb);
+
+            if (expressionIndex < verbIndex) {
+                feedback.style.color = "var(--accent-red)";
+                feedback.innerText = `❌ Word Order Error! '${foundExpression}' goes at the END of the sentence!\nExample: "I ${currentTile.phrase} ${foundExpression}"`;
+                return;
+            }
+        }
+
+        // All checks passed!
+        feedback.style.color = "var(--accent-green)";
+        feedback.innerText = "✅ Excellent Grammar, Agreement & Word Order! Turn complete.";
+        
+        setTimeout(() => {
+            document.getElementById('verificationArea').style.display = "none";
+            waitingForVerification = false;
+            advanceTurn();
+        }, 1200);
+    }
+
+    function advanceTurn() {
+        currentTurn = (currentTurn + 1) % activePlayers.length;
+        const nextP = activePlayers[currentTurn];
+        document.getElementById('playerTurn').innerText = `${nextP.name} ${nextP.icon}`;
+        document.getElementById('playerTurn').style.color = nextP.color;
+        document.getElementById('rollBtn').disabled = false;
+    }
+
+    window.onload = initBoard;
+</script>
+
+</body>
+</html>
