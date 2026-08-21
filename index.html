@@ -352,15 +352,38 @@
         { id: 31, label: "FINISH", icon: "🏁", row: 2, col: 5, type: "finish" }
     ];
 
-    const adverbs = ["always", "usually", "often", "sometimes", "rarely", "hardly ever", "never"];
+    const adverbs = ["always", "usually", "almost always", "generally", "normally", "often", "frequently", "sometimes", "occasionally", "seldom", "rarely", "hardly ever", "never"];
     
     const timeExpressions = [
-        "every day", "every week", "every month", "every year", "every other day",
-        "once a day", "once a week", "once a month", "once a year",
-        "twice a day", "twice a week", "twice a month", "twice a year",
-        "three times a day", "three times a week", "three times a month", "three times a year",
-        "once in a blue moon"
-    ];
+    // Standard frequencies (Daily, Weekly, Monthly, Yearly)
+    "every day", "every week", "every month", "every year", "every other day", "every other week", "every other month",
+
+    // Numerical frequencies (Once, Twice, 3+ times)
+    "once a day", "once a week", "once a month", "once a year", "once an hour",
+    "twice a day", "twice a week", "twice a month", "twice a year", "twice an hour",
+    "three times a day", "three times a week", "three times a month", "three times a year",
+    "four times a day", "four times a week", "four times a month", "four times a year",
+    "five times a day", "five times a week", "five times a month", "five times a year",
+    "multiple times a day", "multiple times a week", "several times a month",
+
+    // Specific Days / Weekends / Parts of the day
+    "on weekends", "on weekdays", "on sundays", "on mondays", "on tuesdays", "on wednesdays", "on thursdays", "on fridays", "on saturdays",
+    "every morning", "every afternoon", "every evening", "every night",
+    "in the morning", "in the afternoon", "in the evening", "at night",
+
+    // Idiomatic & Colloquial Frequency Expressions
+    "once in a blue moon",
+    "once in a while",
+    "from time to time",
+    "every now and then",
+    "now and then",
+    "off and on",
+    "on and off",
+    "all the time",
+    "most of the time",
+    "almost every day",
+    "hardly ever"
+];
 
     const allPlayersMaster = [
         { id: 0, name: "Player 1", color: "#f44747", pos: 0, icon: "🔴" },
