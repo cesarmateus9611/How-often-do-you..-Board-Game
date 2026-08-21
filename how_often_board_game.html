@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Often Do You...? // Mobile Board Game</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --accent-green: #4ec9b0;
+            --accent-blue: #569cd6;
+            --accent-yellow: #dcdcaa;
+            --accent-orange: #ce9178;
+            --accent-red: #f44747;
+            --text-main: #d4d4d4;
+            --border-color: #333333;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Consolas', 'Courier New', monospace;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        h1 { color: var(--accent-blue); font-size: 18pt; margin-bottom: 4px; }
+        .tagline { color: var(--accent-orange); font-style: italic; font-size: 8.5pt; }
+
+        /* Responsive Layout */
+        .game-layout {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 15px;
+        }
+
+        /* Board Container */
+        .board-container {
+            background-color: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .board-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            grid-template-rows: repeat(7, 1fr);
+            gap: 4px;
+            width: 100%;
+            max-width: 550px;
+            aspect-ratio: 1 / 1;
+        }
+
+        .tile {
+            background-color: #2a2a2a;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 2px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            font-size: 7.5pt;
+            user-select: none;
+            overflow: hidden;
+        }
+
+        .tile .icon { font-size: 13pt; line-height: 1; }
+        .tile .label { font-weight: bold; color: var(--text-main); line-height: 1; margin-top: 2px; }
+
+        .tile.start { background-color: #1e3a29; border-color: var(--accent-green); }
+        .tile.finish { background-color: #481e1e; border-color: var(--accent-red); }
+        
+        /* Centered Info Box (Grids 3,3 to 5,5) */
+        .tile.center-info {
+            background-color: #161616;
+            border: 1px dashed var(--accent-yellow);
+            grid-column: 3 / span 3;
+            grid-row: 3 / span 3;
+            display: flex;
+            flex-direction: column;
+            padding: 8px;
+            justify-content: center;
+            align-items: center;
+            z-index: 1;
+            border-radius: 8px;
+        }
+
+        /* Tokens */
+        .token-container {
+            position: absolute;
+            bottom: 2px;
+            display: flex;
+            gap: 2px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .player-token {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: 1px solid #fff;
+            box-shadow: 0 0 3px rgba(0,0,0,0.8);
+        }
+
+        .p0 { background-color: #f44747; }
+        .p1 { background-color: #4ec9b0; }
+        .p2 { background-color: #f5c842; }
+        .p3 { background-color: #569cd6; }
+
+        /* Controls Area */
+        .controls-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .panel-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .panel-title {
+            color: var(--accent-green);
+            font-size: 10pt;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 4px;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .dice-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            background: #141414;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .dice {
+            width: 42px;
+            height: 42px;
+            background: var(--accent-yellow);
+            color: #000;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16pt;
+            font-weight: bold;
+        }
+
+        .btn {
+            background-color: var(--accent-blue);
+            color: #121212;
+            border: none;
+            padding: 8px 14px;
+            font-family: inherit;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn:disabled { background-color: #555; cursor: not-allowed; }
+
+        .prompt-box {
+            background-color: #141414;
+            border-left: 3px solid var(--accent-yellow);
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 9pt;
+            line-height: 1.4;
+        }
+
+        .player-select {
+            background: #141414;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 5px;
+            font-family: inherit;
+            border-radius: 4px;
+            width: 100%;
+            margin-bottom: 8px;
+            font-size: 8.5pt;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            .game-layout { grid-template-columns: 1fr; }
+            .board-container { width: 100%; }
+            .tile .label { font-size: 6.5pt; }
+            .tile .icon { font-size: 11pt; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>HOW OFTEN DO YOU...?</h1>
+        <div class="tagline">&lt;Adverbs of Frequency Board Game&gt;</div>
+        <div class="tagline">&lt;By Cesar Peña&gt;</div>
+    </header>
+
+    <div class="game-layout">
+        <!-- BOARD -->
+        <div class="board-container">
+            <div class="board-grid" id="boardGrid">
+                <!-- Center Info Area -->
+                <div class="tile center-info">
+                    <h2 style="color: var(--accent-yellow); font-size: 10pt; margin-bottom: 4px;">Grammar Helper</h2>
+                    <div style="font-size: 7pt; text-align: left; width: 100%; line-height: 1.3;">
+                        <strong>Adverbs:</strong> always, usually, often, sometimes, rarely, never.<br>
+                        <strong>Expressions:</strong> once/twice a week, every other day, once in a blue moon.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTROLS -->
+        <div class="controls-panel">
+            <div class="panel-card">
+                <div class="panel-title">⚙️ Game Setup</div>
+                <select class="player-select" id="playerCountSelect" onchange="setupGame()">
+                    <option value="2">2 Players (🔴 🟢)</option>
+                    <option value="3">3 Players (🔴 🟢 🟡)</option>
+                    <option value="4" selected>4 Players (🔴 🟢 🟡 🔵)</option>
+                </select>
+                <button class="btn" style="background-color: var(--border-color); color: #fff; width: 100%; font-size: 8pt;" onclick="setupGame()">
+                    RESET GAME ↺
+                </button>
+            </div>
+
+            <div class="panel-card">
+                <div class="panel-title">🎲 D4 Virtual Dice</div>
+                <div style="font-size: 9pt; font-weight: bold; margin-bottom: 8px;">
+                    Turn: <span id="playerTurn" style="color: #f44747">Player 1 🔴</span>
+                </div>
+                <div class="dice-box">
+                    <div class="dice" id="diceValue">D4</div>
+                    <button class="btn" id="rollBtn" onclick="rollDice()">ROLL (1-4)</button>
+                </div>
+            </div>
+
+            <div class="panel-card">
+                <div class="panel-title">💬 Speaking Prompt</div>
+                <div class="prompt-box" id="promptBox">
+                    Roll the 4-sided dice to move your token!
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const tileData = [
+        { id: 0, label: "START", icon: "🚀", row: 7, col: 1, type: "start" },
+        { id: 1, label: "eat pizza", icon: "🍕", row: 6, col: 1 },
+        { id: 2, label: "go swim", icon: "🏊‍♂️", row: 5, col: 1 },
+        { id: 3, label: "ride horse", icon: "🐎", row: 4, col: 1 },
+        { id: 4, label: "flowers", icon: "💐", row: 3, col: 1 },
+        { id: 5, label: "snowman", icon: "☃️", row: 2, col: 1 },
+        { id: 6, label: "photos", icon: "📷", row: 1, col: 1 },
+        { id: 7, label: "read books", icon: "📚", row: 1, col: 2 },
+        { id: 8, label: "go to zoo", icon: "🦒", row: 1, col: 3 },
+        { id: 9, label: "homework", icon: "✍️", row: 1, col: 4 },
+        { id: 10, label: "see movie", icon: "🎬", row: 1, col: 5 },
+        { id: 11, label: "buy ice cream", icon: "🍦", row: 1, col: 6 },
+        { id: 12, label: "drive car", icon: "🚗", row: 1, col: 7 },
+        { id: 13, label: "drink juice", icon: "🧃", row: 2, col: 7 },
+        { id: 14, label: "picnic", icon: "🧺", row: 3, col: 7 },
+        { id: 15, label: "teeth", icon: "🪥", row: 4, col: 7 },
+        { id: 16, label: "cry", icon: "😭", row: 5, col: 7 },
+        { id: 17, label: "watch TV", icon: "📺", row: 6, col: 7 },
+        { id: 18, label: "wear hat", icon: "🎩", row: 7, col: 7 },
+        { id: 19, label: "take taxi", icon: "🚕", row: 7, col: 6 },
+        { id: 20, label: "pineapple", icon: "🍍", row: 7, col: 5 },
+        { id: 21, label: "marbles", icon: "🔮", row: 7, col: 4 },
+        { id: 22, label: "by train", icon: "🚂", row: 7, col: 3 },
+        { id: 23, label: "tennis", icon: "🎾", row: 7, col: 2 },
+        { id: 24, label: "get up late", icon: "⏰", row: 6, col: 2 },
+        { id: 25, label: "strawberries", icon: "🍓", row: 5, col: 2 },
+        { id: 26, label: "play cards", icon: "🃏", row: 4, col: 2 },
+        { id: 27, label: "shower", icon: "🚿", row: 3, col: 2 },
+        { id: 28, label: "grandparents", icon: "👵", row: 2, col: 2 },
+        { id: 29, label: "ride bike", icon: "🚲", row: 2, col: 3 },
+        { id: 30, label: "swimming", icon: "🏊", row: 2, col: 4 },
+        { id: 31, label: "FINISH", icon: "🏁", row: 2, col: 5, type: "finish" }
+    ];
+
+    const allPlayersMaster = [
+        { id: 0, name: "Player 1", color: "#f44747", pos: 0, icon: "🔴" },
+        { id: 1, name: "Player 2", color: "#4ec9b0", pos: 0, icon: "🟢" },
+        { id: 2, name: "Player 3", color: "#f5c842", pos: 0, icon: "🟡" },
+        { id: 3, name: "Player 4", color: "#569cd6", pos: 0, icon: "🔵" }
+    ];
+
+    let activePlayers = [];
+    let currentTurn = 0;
+    let isRolling = false;
+
+    function initBoard() {
+        const board = document.getElementById('boardGrid');
+        
+        tileData.forEach(tile => {
+            const div = document.createElement('div');
+            div.className = `tile ${tile.type || ''}`;
+            div.id = `tile-${tile.id}`;
+            div.style.gridRow = tile.row;
+            div.style.gridColumn = tile.col;
+
+            div.innerHTML = `
+                <div class="icon">${tile.icon}</div>
+                <div class="label">${tile.label}</div>
+                <div class="token-container" id="tokens-${tile.id}"></div>
+            `;
+            board.appendChild(div);
+        });
+
+        setupGame();
+    }
+
+    function setupGame() {
+        const count = parseInt(document.getElementById('playerCountSelect').value);
+        activePlayers = allPlayersMaster.slice(0, count);
+        activePlayers.forEach(p => p.pos = 0);
+        
+        currentTurn = 0;
+        document.getElementById('playerTurn').innerText = `${activePlayers[0].name} ${activePlayers[0].icon}`;
+        document.getElementById('playerTurn').style.color = activePlayers[0].color;
+        document.getElementById('diceValue').innerText = "D4";
+        document.getElementById('promptBox').innerHTML = "Roll the 4-sided dice to move your token!";
+        
+        renderTokens();
+    }
+
+    function renderTokens() {
+        tileData.forEach(t => {
+            const container = document.getElementById(`tokens-${t.id}`);
+            if (container) container.innerHTML = '';
+        });
+
+        activePlayers.forEach(p => {
+            const container = document.getElementById(`tokens-${p.pos}`);
+            if (container) {
+                const token = document.createElement('div');
+                token.className = `player-token p${p.id}`;
+                token.title = p.name;
+                container.appendChild(token);
+            }
+        });
+    }
+
+    function rollDice() {
+        if (isRolling) return;
+        isRolling = true;
+        document.getElementById('rollBtn').disabled = true;
+
+        const diceEl = document.getElementById('diceValue');
+        let count = 0;
+
+        const interval = setInterval(() => {
+            diceEl.innerText = Math.floor(Math.random() * 4) + 1;
+            count++;
+            if (count > 8) {
+                clearInterval(interval);
+                const roll = Math.floor(Math.random() * 4) + 1;
+                diceEl.innerText = roll;
+                movePlayer(roll);
+            }
+        }, 70);
+    }
+
+    function movePlayer(steps) {
+        const p = activePlayers[currentTurn];
+        p.pos = Math.min(p.pos + steps, tileData.length - 1);
+        
+        renderTokens();
+        updatePrompt(p);
+
+        if (p.pos < tileData.length - 1) {
+            currentTurn = (currentTurn + 1) % activePlayers.length;
+            const nextP = activePlayers[currentTurn];
+            document.getElementById('playerTurn').innerText = `${nextP.name} ${nextP.icon}`;
+            document.getElementById('playerTurn').style.color = nextP.color;
+        } else {
+            document.getElementById('promptBox').innerHTML = `
+                <strong style="color: var(--accent-green); font-size: 11pt;">🎉 ${p.name.toUpperCase()} WINS THE GAME!</strong>
+            `;
+        }
+
+        isRolling = false;
+        document.getElementById('rollBtn').disabled = false;
+    }
+
+    function updatePrompt(player) {
+        const currentTile = tileData[player.pos];
+        const promptBox = document.getElementById('promptBox');
+
+        if (currentTile.type === 'start') {
+            promptBox.innerHTML = `<strong>${player.name}</strong> is at START.`;
+        } else if (currentTile.type === 'finish') {
+            promptBox.innerHTML = `<strong style="color: var(--accent-green)">${player.name} reached FINISH!</strong>`;
+        } else {
+            promptBox.innerHTML = `
+                <div style="color: var(--accent-yellow); font-size: 8pt; margin-bottom: 2px;">// LANDED ACTIVITY:</div>
+                <div style="font-size: 12pt; font-weight: bold; color: #fff; margin-bottom: 6px;">
+                    ${currentTile.icon} ${currentTile.label.toUpperCase()}
+                </div>
+                <div style="font-size: 8pt; color: #aaa;">
+                    👉 Ask <strong>${player.name}</strong> a question about this using <strong>"How often do you..."</strong>
+                </div>
+            `;
+        }
+    }
+
+    window.onload = initBoard;
+</script>
+
+</body>
+</html>
