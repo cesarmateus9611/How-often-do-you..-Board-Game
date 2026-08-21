@@ -308,8 +308,7 @@
                 </div>
 
                 <div id="verificationArea" style="display: none; margin-top: 10px;">
-                    <input type="text" class="verify-input" id="answerInput" placeholder="Type your full sentence..." autofocus onkeydown="if(event.key==='Enter') verifyAnswer()">
-                    <button class="btn" style="width: 100%; background-color: var(--accent-green);" onclick="verifyAnswer()">VERIFY ANSWER ✓</button>
+                 <input type="text" class="verify-input" id="answerInput" placeholder="Type your full sentence..." autofocus spellcheck="true" lang="en" onkeydown="if(event.key==='Enter') verifyAnswer()">                    <button class="btn" style="width: 100%; background-color: var(--accent-green);" onclick="verifyAnswer()">VERIFY ANSWER ✓</button>
                     <div class="feedback-text" id="feedbackText"></div>
                 </div>
             </div>
@@ -514,8 +513,16 @@
             }
         }
 
-        // Rule 3: Correct base verb exists
+        // Rule 3: Correct base verb exists and is spelled correctly
         if (!words.includes(baseVerb)) {
+            // Check if they tried to type something similar but misspelled it
+            const nearMiss = words.find(w => w.startsWith(baseVerb.substring(0, 2)) && w !== baseVerb);
+            if (nearMiss) {
+                feedback.style.color = "var(--accent-red)";
+                feedback.innerText = `❌ Spelling Error! Check the spelling of '${nearMiss}'. It should be '${baseVerb}'.`;
+                return;
+            }
+
             feedback.style.color = "var(--accent-red)";
             feedback.innerText = `❌ Sentence must include the base verb '${baseVerb}'!`;
             return;
@@ -527,7 +534,7 @@
 
         if (!foundAdverb && !foundExpression) {
             feedback.style.color = "var(--accent-red)";
-            feedback.innerText = "❌ Missing frequency word! Use an adverb (always, never...) OR time expression (once a week...).";
+            feedback.innerText = "❌ Missing or misspelled frequency word! Check spelling for adverbs (always, usually, often...) or time expressions (once a week...).";
             return;
         }
 
@@ -557,7 +564,7 @@
 
         // All checks passed!
         feedback.style.color = "var(--accent-green)";
-        feedback.innerText = "✅ Excellent Grammar, Agreement & Word Order! Turn complete.";
+        feedback.innerText = "✅ Excellent Spelling, Grammar & Word Order! Turn complete.";
         
         setTimeout(() => {
             document.getElementById('verificationArea').style.display = "none";
